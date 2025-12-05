@@ -29,13 +29,49 @@ namespace topit
 
     p_t d;
   };
+  size_t points(const IDraw &d, p_t **pts, size_t s);
+  f_t frame(const p_t *pts, size_t s);
 }
 
 int main()
 {
+  using topit::Dot;
+  using topit::f_t;
+  using topit::IDraw;
   using topit::p_t;
-  p_t a{1, 0}, b{1, 0};
-  std::cout << (a == b) << '\n';
+  int err = 0;
+  IDraw *shps[3] = {};
+  p_t *pts = nullptr;
+  size_t s = 0;
+  try
+  {
+    shps[0] = new Dot(0, 0);
+    shps[1] = new Dot(5, 7);
+    shps[2] = new Dot(-5, 2);
+    // TODO:
+    for (size_t i = 0; i < 3; ++i)
+    {
+      s += topit::points(*(shps[i]), &pts, s);
+    }
+    f_t fr = topit::frame(pts, s);
+    // [1] достать все точки из фигур
+    // [2] посчитать ограничивающий прямоугольник
+    // [3] подготовить полотно (canvas) нужного размера
+    // - заполнить полотно '.'
+    // [4] нарисовать на полотне все очки (которые достали из фигур)
+    // - будем рисовать '#'
+  }
+  catch (...)
+  {
+    err = 2;
+    std::cerr << "Bad drawing\n";
+  }
+
+  delete shps[0];
+  delete shps[1];
+  delete shps[2];
+  delete[] pts;
+  return err;
 }
 
 topit::Dot::Dot(p_t dd) : IDraw(), d{dd}
