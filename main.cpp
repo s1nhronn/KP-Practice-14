@@ -18,6 +18,12 @@ namespace topit
     virtual p_t next(p_t) const = 0;
     virtual ~IDraw() = default;
   };
+
+  struct Dot : IDraw
+  {
+    p_t begin() const override;
+    p_t next(p_t) const override;
+  };
 }
 
 int main()
