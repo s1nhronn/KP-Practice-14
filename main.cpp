@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ostream>
 #include <stdexcept>
 
 namespace topit
@@ -33,6 +34,7 @@ namespace topit
   f_t frame(const p_t *pts, size_t s);
   char *canvas(f_t fr, char fill);
   void paint(char *cnv, f_t fr, p_t p, char fill);
+  void flush(std::ostream &os, const char *cnv, f_t fr);
 }
 
 int main()
@@ -47,7 +49,6 @@ int main()
     shps[0] = new Dot(0, 0);
     shps[1] = new Dot(5, 7);
     shps[2] = new Dot(-5, 2);
-    // TODO:
     for (size_t i = 0; i < 3; ++i)
     {
       s += points(*(shps[i]), &pts, s);
@@ -58,9 +59,7 @@ int main()
     {
       paint(cnv, fr, pts[i], '#');
     }
-    // [4] нарисовать на полотне все точки (которые достали из фигур)
-    // - будем рисовать '#'
-    // [5] вывести полотно на экран
+    flush(std::cout, cnv, fr);
     delete[] cnv;
   }
   catch (...)
