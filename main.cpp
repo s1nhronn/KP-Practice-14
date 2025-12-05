@@ -30,6 +30,24 @@ namespace topit
 
     p_t d;
   };
+
+  struct HorizontalLine : IDraw
+  {
+    HorizontalLine(p_t s, p_t e);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+
+    p_t start, end;
+  };
+
+  struct Rectangle : IDraw
+  {
+    Rectangle(p_t upl, p_t botr);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+
+    p_t upperLeft, bottomRight;
+  };
   // Домашнее задание:
   // - Добавить еще 2-3 фигуры
   //  - Вертикальный отрезок
@@ -90,6 +108,58 @@ int main()
   delete shps[2];
   delete[] pts;
   return err;
+}
+
+topit::Rectangle::Rectangle(p_t upl, p_t botr) : upperLeft(upl), bottomRight(botr)
+{
+}
+
+topit::p_t topit::Rectangle::begin() const
+{
+  return upperLeft;
+}
+
+topit::p_t topit::Rectangle::next(p_t prev) const
+{
+  if (prev.y == upperLeft.y && upperLeft.x <= prev.x && prev.x < bottomRight.x)
+  {
+    return {prev.x + 1, prev.y};
+  }
+  if (prev.x == bottomRight.x && upperLeft.y >= prev.y && prev.y > bottomRight.y)
+  {
+    return {prev.x, prev.y - 1};
+  }
+  if (prev.y == bottomRight.y && upperLeft.x < prev.x && prev.x <= bottomRight.x)
+  {
+    return {prev.x - 1, prev.y};
+  }
+  if (prev.x == upperLeft.x && upperLeft.y > prev.y && prev.y >= bottomRight.y)
+  {
+    return {prev.x, prev.y + 1};
+  }
+  throw std::logic_error("bad impl");
+}
+
+topit::HorizontalLine::HorizontalLine(p_t s, p_t e) : IDraw(), start(s), end(e)
+{
+}
+
+topit::p_t topit::HorizontalLine::begin() const
+{
+  return start;
+}
+
+topit::p_t topit::HorizontalLine::next(p_t prev) const
+{
+  if (prev == end)
+  {
+    return start;
+  }
+  if (prev.y == start.y && start.x <= prev.x && prev.x < end.x)
+  {
+    return {prev.x + 1, prev.y};
+  }
+  throw std::logic_error("bad impl");
 }
 
 topit::Dot::Dot(p_t dd) : IDraw(), d{dd}
