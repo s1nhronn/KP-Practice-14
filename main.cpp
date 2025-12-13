@@ -1,3 +1,4 @@
+#include <exception>
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
@@ -14,6 +15,9 @@ namespace topit
   {
     p_t aa, bb;
   };
+  size_t rows(f_t);
+  size_t cols(f_t);
+
   struct IDraw
   {
     virtual p_t begin() const = 0;
@@ -40,6 +44,7 @@ namespace topit
     p_t start, end;
   };
 
+  // FIXME: не рисуется
   struct Rectangle : IDraw
   {
     Rectangle(p_t upl, p_t botr);
@@ -48,27 +53,16 @@ namespace topit
 
     p_t upperLeft, bottomRight;
   };
-  // Домашнее задание:
-  // - Добавить еще 2-3 фигуры
-  //  - Вертикальный отрезок
-  //  - Горизонтальный отрезок
-  //  - Диагональ под 45 градусов заданной длины
-  //  - Придумать свою фигуру
 
-  // расширять заданный массив точками из очередной фигуры
-  // - extend...
+  void extend(p_t **pts, size_t s, p_t p);
   size_t points(const IDraw &d, p_t **pts, size_t s);
 
-  // найти минимум и максимум по каждой координате среди точек и сформировать фрейм
   f_t frame(const p_t *pts, size_t s);
 
-  // построить полотно (из фрейма получить количество столбцов и колонок)
   char *canvas(f_t fr, char fill);
 
-  // координаты точки перевести в координаты в двумерном массиве
   void paint(char *cnv, f_t fr, p_t p, char fill);
 
-  // вывод двумерного массива на основе размеров, определяемых фреймом
   void flush(std::ostream &os, const char *cnv, f_t fr);
 }
 
@@ -76,18 +70,16 @@ int main()
 {
   using namespace topit;
   int err = 0;
-  IDraw *shps[3] = {};
   p_t *pts = nullptr;
   size_t s = 0;
+  IDraw *figure = nullptr;
+  IDraw *figure2 = nullptr;
   try
   {
-    shps[0] = new Dot(0, 0);
-    shps[1] = new Dot(5, 7);
-    shps[2] = new Dot(-5, 2);
-    for (size_t i = 0; i < 3; ++i)
-    {
-      s += points(*(shps[i]), &pts, s);
-    }
+    figure = new HorizontalLine({0, 0}, {5, 0});
+    figure2 = new HorizontalLine({-5, -3}, {7, -3});
+    s += points(*(figure), &pts, s);
+    s += points(*(figure2), &pts, s);
     f_t fr = frame(pts, s);
     char *cnv = canvas(fr, '.');
     for (size_t i = 0; i < s; ++i)
@@ -97,17 +89,99 @@ int main()
     flush(std::cout, cnv, fr);
     delete[] cnv;
   }
-  catch (...)
+  catch (const std::exception &e)
   {
     err = 2;
-    std::cerr << "Bad drawing\n";
+    std::cerr << e.what() << '\n';
   }
 
-  delete shps[0];
-  delete shps[1];
-  delete shps[2];
-  delete[] pts;
+  delete figure;
   return err;
+}
+
+size_t topit::rows(f_t ft)
+{
+  return ft.bb.y - ft.aa.y + 1;
+}
+
+size_t topit::cols(f_t ft)
+{
+  return ft.bb.x - ft.aa.x + 1;
+}
+
+char *topit::canvas(f_t fr, char fill)
+{
+  char *cnv = new char[rows(fr) * cols(fr)];
+  for (size_t i = 0; i < rows(fr) * cols(fr); ++i)
+  {
+    cnv[i] = fill;
+  }
+  return cnv;
+}
+
+void topit::paint(char *cnv, f_t fr, p_t p, char fill)
+{
+  size_t dy = fr.bb.y - p.y;
+  size_t dx = p.x - fr.aa.x;
+  cnv[dy * cols(fr) + dx] = fill;
+}
+
+void topit::flush(std::ostream &os, const char *cnv, f_t fr)
+{
+  for (size_t i = 0; i < rows(fr); ++i)
+  {
+    for (size_t j = 0; j < cols(fr); ++j)
+    {
+      os << cnv[i * cols(fr) + j];
+    }
+    os << '\n';
+  }
+}
+
+topit::f_t topit::frame(const p_t *pts, size_t s)
+{
+  if (!s)
+  {
+    throw std::logic_error("no pts");
+  }
+  int minx = pts[0].x, maxx = minx;
+  int miny = pts[0].y, maxy = miny;
+  for (size_t i = 0; i < s; ++i)
+  {
+    minx = std::min(minx, pts[i].x);
+    maxx = std::max(maxx, pts[i].x);
+    miny = std::min(miny, pts[i].y);
+    maxy = std::max(maxy, pts[i].y);
+  }
+  p_t aa = {minx, miny};
+  p_t bb = {maxx, maxy};
+  return {aa, bb};
+}
+
+void topit::extend(p_t **pts, size_t s, p_t p)
+{
+  p_t *e = new p_t[s + 1];
+  for (size_t i = 0; i < s; ++i)
+  {
+    e[i] = (*pts)[i];
+  }
+  e[s] = p;
+  delete[] *pts;
+  *pts = e;
+}
+
+size_t topit::points(const IDraw &d, p_t **pts, size_t s)
+{
+  size_t r = 1;
+  p_t p = d.begin();
+  extend(pts, s, p);
+  while (d.next(p) != d.begin())
+  {
+    p = d.next(p);
+    extend(pts, s + r, p);
+    ++r;
+  }
+  return r;
 }
 
 topit::Rectangle::Rectangle(p_t upl, p_t botr) : upperLeft(upl), bottomRight(botr)
