@@ -1,6 +1,5 @@
 #include <iostream>
 #include "ascii_draw.hpp"
-#include "idraw.hpp"
 
 int main()
 {
