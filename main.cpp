@@ -3,16 +3,10 @@
 #include <ostream>
 #include <stdexcept>
 #include "geom.hpp"
+#include "idraw.hpp"
 
 namespace topit
 {
-  struct IDraw
-  {
-    virtual p_t begin() const = 0;
-    virtual p_t next(p_t) const = 0;
-    virtual ~IDraw() = default;
-  };
-
   struct Dot : IDraw
   {
     Dot(int x, int y);
