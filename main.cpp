@@ -2,22 +2,10 @@
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
+#include "geom.hpp"
 
 namespace topit
 {
-  struct p_t
-  {
-    int x, y;
-  };
-  bool operator==(p_t, p_t);
-  bool operator!=(p_t, p_t);
-  struct f_t
-  {
-    p_t aa, bb;
-  };
-  size_t rows(f_t);
-  size_t cols(f_t);
-
   struct IDraw
   {
     virtual p_t begin() const = 0;
@@ -97,16 +85,6 @@ int main()
 
   delete figure;
   return err;
-}
-
-size_t topit::rows(f_t ft)
-{
-  return ft.bb.y - ft.aa.y + 1;
-}
-
-size_t topit::cols(f_t ft)
-{
-  return ft.bb.x - ft.aa.x + 1;
 }
 
 char *topit::canvas(f_t fr, char fill)
@@ -256,13 +234,4 @@ topit::p_t topit::Dot::next(p_t prev) const
     throw std::logic_error("bad impl");
   }
   return d;
-}
-
-bool topit::operator==(p_t a, p_t b)
-{
-  return a.x == b.x && a.y == b.y;
-}
-bool topit::operator!=(p_t a, p_t b)
-{
-  return !(a == b);
 }
