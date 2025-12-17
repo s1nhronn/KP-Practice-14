@@ -15,5 +15,7 @@ namespace topit
   };
   size_t rows(f_t);
   size_t cols(f_t);
+
+  f_t frame(const p_t *pts, size_t s);
 }
 #endif
