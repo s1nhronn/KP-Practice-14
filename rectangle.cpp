@@ -1,7 +1,8 @@
 #include "rectangle.hpp"
+#include "idraw.hpp"
 #include <stdexcept>
 
-topit::Rectangle::Rectangle(p_t botl, p_t upr) : upperRight(upr), bottomLeft(botl)
+topit::Rectangle::Rectangle(p_t botl, p_t upr) : IDraw(), upperRight(upr), bottomLeft(botl)
 {
 }
 
