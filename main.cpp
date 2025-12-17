@@ -2,29 +2,6 @@
 #include "ascii_draw.hpp"
 #include "idraw.hpp"
 
-namespace topit
-{
-  // TODO: Разбить фигуры на файлы
-  struct HorizontalLine : IDraw
-  {
-    HorizontalLine(p_t s, p_t e);
-    p_t begin() const override;
-    p_t next(p_t) const override;
-
-    p_t start, end;
-  };
-
-  // FIXME: не рисуется
-  struct Rectangle : IDraw
-  {
-    Rectangle(p_t upl, p_t botr);
-    p_t begin() const override;
-    p_t next(p_t) const override;
-
-    p_t upperRight, bottomLeft;
-  };
-}
-
 int main()
 {
   using namespace topit;
@@ -62,56 +39,4 @@ int main()
 
   delete figure;
   return err;
-}
-
-topit::Rectangle::Rectangle(p_t botl, p_t upr) : upperRight(upr), bottomLeft(botl)
-{
-}
-
-topit::p_t topit::Rectangle::begin() const
-{
-  return upperRight;
-}
-
-topit::p_t topit::Rectangle::next(p_t prev) const
-{
-  if (prev.x == upperRight.x && bottomLeft.y < prev.y && prev.y <= upperRight.y)
-  {
-    return {prev.x, prev.y - 1};
-  }
-  if (prev.y == bottomLeft.y && bottomLeft.x < prev.x && prev.x <= upperRight.x)
-  {
-    return {prev.x - 1, prev.y};
-  }
-  if (prev.x == bottomLeft.x && bottomLeft.y <= prev.y && prev.y < upperRight.y)
-  {
-    return {prev.x, prev.y + 1};
-  }
-  if (prev.y == upperRight.y && bottomLeft.x <= prev.x && prev.x < upperRight.x)
-  {
-    return {prev.x + 1, prev.y};
-  }
-  throw std::logic_error("bad impl");
-}
-
-topit::HorizontalLine::HorizontalLine(p_t s, p_t e) : IDraw(), start(s), end(e)
-{
-}
-
-topit::p_t topit::HorizontalLine::begin() const
-{
-  return start;
-}
-
-topit::p_t topit::HorizontalLine::next(p_t prev) const
-{
-  if (prev == end)
-  {
-    return start;
-  }
-  if (prev.y == start.y && start.x <= prev.x && prev.x < end.x)
-  {
-    return {prev.x + 1, prev.y};
-  }
-  throw std::logic_error("bad impl");
 }
