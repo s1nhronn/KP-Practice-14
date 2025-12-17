@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ascii_draw.hpp"
+#include "idraw.hpp"
 
 namespace topit
 {
@@ -20,7 +21,7 @@ namespace topit
     p_t begin() const override;
     p_t next(p_t) const override;
 
-    p_t upperLeft, bottomRight;
+    p_t upperRight, bottomLeft;
   };
 }
 
@@ -33,13 +34,17 @@ int main()
   IDraw *figure = nullptr;
   IDraw *figure2 = nullptr;
   IDraw *figure3 = nullptr;
+  IDraw *figure4 = nullptr;
   try
   {
     figure = new HorizontalLine({0, 0}, {5, 0});
     figure2 = new HorizontalLine({-5, -3}, {7, -3});
     figure3 = new Dot(1, 2);
-    s += points(*(figure), &pts, s);
-    s += points(*(figure2), &pts, s);
+    figure4 = new Rectangle({-15, -15}, {-7, -7});
+    s += points(*figure, &pts, s);
+    s += points(*figure2, &pts, s);
+    s += points(*figure3, &pts, s);
+    s += points(*figure4, &pts, s);
     f_t fr = frame(pts, s);
     char *cnv = canvas(fr, '.');
     for (size_t i = 0; i < s; ++i)
@@ -59,32 +64,32 @@ int main()
   return err;
 }
 
-topit::Rectangle::Rectangle(p_t upl, p_t botr) : upperLeft(upl), bottomRight(botr)
+topit::Rectangle::Rectangle(p_t botl, p_t upr) : upperRight(upr), bottomLeft(botl)
 {
 }
 
 topit::p_t topit::Rectangle::begin() const
 {
-  return upperLeft;
+  return upperRight;
 }
 
 topit::p_t topit::Rectangle::next(p_t prev) const
 {
-  if (prev.y == upperLeft.y && upperLeft.x <= prev.x && prev.x < bottomRight.x)
-  {
-    return {prev.x + 1, prev.y};
-  }
-  if (prev.x == bottomRight.x && upperLeft.y >= prev.y && prev.y > bottomRight.y)
+  if (prev.x == upperRight.x && bottomLeft.y < prev.y && prev.y <= upperRight.y)
   {
     return {prev.x, prev.y - 1};
   }
-  if (prev.y == bottomRight.y && upperLeft.x < prev.x && prev.x <= bottomRight.x)
+  if (prev.y == bottomLeft.y && bottomLeft.x < prev.x && prev.x <= upperRight.x)
   {
     return {prev.x - 1, prev.y};
   }
-  if (prev.x == upperLeft.x && upperLeft.y > prev.y && prev.y >= bottomRight.y)
+  if (prev.x == bottomLeft.x && bottomLeft.y <= prev.y && prev.y < upperRight.y)
   {
     return {prev.x, prev.y + 1};
+  }
+  if (prev.y == upperRight.y && bottomLeft.x <= prev.x && prev.x < upperRight.x)
+  {
+    return {prev.x + 1, prev.y};
   }
   throw std::logic_error("bad impl");
 }
