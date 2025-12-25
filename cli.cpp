@@ -6,12 +6,12 @@
 #include <istream>
 #include <stdexcept>
 
-void hi()
+void hi(std::istream &)
 {
   std::cout << "< HI! >\n";
 }
 
-void hello()
+void hello(std::istream &)
 {
   std::cout << "< HELLO! >\n";
 }
@@ -61,7 +61,8 @@ size_t match(const char *word, const char *const *words, size_t k)
 int main()
 {
   constexpr size_t cmds_count = 2;
-  void (*cmds[cmds_count])() = {hi, hello};
+  using cmd_t = void (*)(std::istream &);
+  cmd_t cmds[cmds_count] = {hi, hello};
   const char *const cmds_text[] = {"hi", "hello"};
 
   constexpr size_t bcapacity = 256;
@@ -80,7 +81,7 @@ int main()
       word[size - 1] = '\0';
       if (size_t i = match(word, cmds_text, cmds_count); i < cmds_count)
       {
-        cmds[i]();
+        cmds[i](std::cin);
       }
       else
       {
