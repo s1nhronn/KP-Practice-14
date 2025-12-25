@@ -1,19 +1,35 @@
 #include <cassert>
 #include <cctype>
 #include <cstring>
+#include <exception>
 #include <ios>
 #include <iostream>
 #include <istream>
+#include <limits>
+#include <ostream>
 #include <stdexcept>
 
-void hi(std::istream &)
+void skipline(std::istream &is)
 {
-  std::cout << "< HI! >\n";
+  using lim_t = std::numeric_limits< std::streamsize >;
+  is.ignore(lim_t::max(), '\n');
 }
 
-void hello(std::istream &)
+void next(std::ostream &os, std::istream &is, size_t &context)
 {
-  std::cout << "< HELLO! >\n";
+  unsigned int i = 0;
+  if (!(is >> i))
+  {
+    throw std::runtime_error("next expects unsigned int");
+  }
+  skipline(is);
+  context = i;
+  os << "< OK >\n";
+}
+
+void last(std::ostream &os, std::istream &, size_t &context)
+{
+  os << "< " << context << " >\n";
 }
 
 bool is_space(char c)
@@ -61,9 +77,11 @@ size_t match(const char *word, const char *const *words, size_t k)
 int main()
 {
   constexpr size_t cmds_count = 2;
-  using cmd_t = void (*)(std::istream &);
-  cmd_t cmds[cmds_count] = {hi, hello};
-  const char *const cmds_text[] = {"hi", "hello"};
+  using cmd_t = void (*)(std::ostream &, std::istream &, size_t &);
+  cmd_t cmds[cmds_count] = {next, last};
+  const char *const cmds_text[] = {"next", "last"};
+
+  size_t context = 0;
 
   constexpr size_t bcapacity = 256;
   char word[bcapacity + 1] = {};
@@ -81,7 +99,18 @@ int main()
       word[size - 1] = '\0';
       if (size_t i = match(word, cmds_text, cmds_count); i < cmds_count)
       {
-        cmds[i](std::cin);
+        try
+        {
+          cmds[i](std::cout, std::cin, context);
+        }
+        catch (const std::exception &e)
+        {
+          std::cerr << "< INVALID COMMAND:" << e.what() << " >\n";
+          if (std::cin.fail())
+          {
+            std::cin.clear(std::cin.rdstate() ^ std::ios::failbit);
+          }
+        }
       }
       else
       {
